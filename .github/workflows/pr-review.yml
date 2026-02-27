@@ -14,7 +14,7 @@
 #     review:
 #       uses: your-org/.github/.github/workflows/pr-review.yml@main
 #       secrets:
-#         anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+#         claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
 #
 # Prerequisites (one-time, org-level):
 #   1. Install the Claude GitHub App on the org.
@@ -30,7 +30,7 @@ name: PR Review
 on:
   workflow_call:
     secrets:
-      anthropic_api_key:
+      claude-api-key:
         description: Anthropic API key for Claude
         required: true
 
