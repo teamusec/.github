@@ -71,6 +71,7 @@ jobs:
 
             Do NOT approve or request changes — just comment with findings.
             The security-review job handles security. Do not duplicate that work.
+          show_full_output: 'true'
           claude_args: |
             --max-turns 10
             --model claude-sonnet-4-6
