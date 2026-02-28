@@ -49,7 +49,7 @@ jobs:
 
       - uses: anthropics/claude-code-action@v1
         with:
-          claude-api-key: ${{ secrets['claude-api-key'] }}
+          anthropic_api_key: ${{ secrets['claude-api-key'] }}
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
@@ -90,7 +90,7 @@ jobs:
 
       - uses: anthropics/claude-code-security-review@main
         with:
-          claude-api-key: ${{ secrets['claude-api-key'] }}
+          anthropic_api_key: ${{ secrets['claude-api-key'] }}
 
   auto-approve:
     name: Auto-Approve (if clean)
