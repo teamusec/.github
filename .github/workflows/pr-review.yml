@@ -52,6 +52,8 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets['claude-api-key'] }}
+          allowed_tools: |
+            Bash(gh pr view*),Bash(gh pr diff*),Bash(gh pr comment*),Bash(gh pr list*),Bash(gh pr checks*),Bash(gh api repos/**),Bash(git log*),Bash(git diff*),Bash(git blame*),Bash(git show*),Bash(grep*),Bash(find*),Bash(cat*),Bash(ls*),Bash(head*),Bash(tail*),Read,Glob,Grep
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
@@ -68,9 +70,11 @@ jobs:
             6. **Breaking changes**: API contract changes, migration needs,
                backwards compatibility.
 
-            Use `gh pr comment` to post all findings (top-level summary and any
-            specific code issues). Reference file paths and line numbers in the
-            comment body. Do NOT use `gh api` directly to post comments.
+            The repository is already checked out locally. Prefer reading files
+            directly (cat, grep, Read tool) over gh api calls where possible.
+
+            Use `gh pr comment` to post all findings. Reference file paths and
+            line numbers in the comment body.
 
             When querying PR details, note that `gh pr view --json` uses
             `reviewRequests` (not `reviewers`) for pending review requests.
