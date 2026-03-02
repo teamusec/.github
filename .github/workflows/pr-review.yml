@@ -14,11 +14,11 @@
 #     review:
 #       uses: your-org/.github/.github/workflows/pr-review.yml@main
 #       secrets:
-#         claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+#         claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 #
 # Prerequisites (one-time, org-level):
 #   1. Install the Claude GitHub App on the org.
-#   2. Add ANTHROPIC_API_KEY as an org-level secret
+#   2. Add CLAUDE_CODE_OAUTH_TOKEN as an org-level secret
 #      (Settings → Secrets → Actions → New organization secret),
 #      scoped to "All repositories" or selected repos.
 #   3. Configure branch protection rulesets at the org level:
@@ -30,8 +30,8 @@ name: PR Review
 on:
   workflow_call:
     secrets:
-      claude-api-key:
-        description: Anthropic API key for Claude
+      claude-oauth-token:
+        description: Claude Code OAuth token
         required: true
 
 jobs:
@@ -51,7 +51,7 @@ jobs:
 
       - uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets['claude-api-key'] }}
+          claude_code_oauth_token: ${{ secrets['claude-oauth-token'] }}
           allowed_tools: |
             Bash(gh pr view*),Bash(gh pr diff*),Bash(gh pr comment*),Bash(gh pr list*),Bash(gh pr checks*),Bash(gh api repos/**),Bash(git log*),Bash(git diff*),Bash(git blame*),Bash(git show*),Bash(grep*),Bash(find*),Bash(cat*),Bash(ls*),Bash(head*),Bash(tail*),Read,Glob,Grep
           prompt: |
@@ -99,9 +99,47 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: anthropics/claude-code-security-review@main
+      - uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets['claude-api-key'] }}
+          claude_code_oauth_token: ${{ secrets['claude-oauth-token'] }}
+          allowed_tools: |
+            Bash(gh pr view*),Bash(gh pr diff*),Bash(gh pr comment*),Bash(gh api repos/**),Bash(git log*),Bash(git diff*),Bash(git blame*),Bash(git show*),Bash(grep*),Bash(find*),Bash(cat*),Bash(ls*),Bash(head*),Bash(tail*),Read,Glob,Grep
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Perform a security-focused review of this pull request. Check for:
+
+            1. **Authentication / Authorization**: Missing auth checks, insecure
+               direct object references (IDOR), privilege escalation, JWT/session
+               handling mistakes.
+            2. **Injection**: SQL injection (raw queries, string formatting in
+               queries), command injection (subprocess with user input), SSTI,
+               path traversal.
+            3. **XSS**: Unescaped user-controlled data rendered as HTML, unsafe
+               innerHTML/dangerouslySetInnerHTML, missing Content-Type headers.
+            4. **Secrets and credentials**: Hardcoded API keys, passwords, tokens,
+               or private keys in source; secrets logged or returned in responses.
+            5. **Input validation**: Missing or bypassable validation on
+               user-controlled fields, file uploads, URL parameters.
+            6. **LLM-specific**: Prompt injection, system prompt leakage, tool
+               call validation gaps, unvalidated LLM output rendered as HTML.
+            7. **Dependency risks**: New packages with known CVEs or suspicious
+               provenance.
+            8. **Cryptography**: Weak algorithms (MD5, SHA1 for security), insecure
+               randomness, improper key management.
+
+            The repository is already checked out locally. Prefer reading files
+            directly (cat, grep, Read tool) over gh api calls where possible.
+
+            Use `gh pr comment` to post all findings, labelled by severity
+            (Critical / High / Medium / Low). Reference file paths and line numbers.
+
+            Do NOT approve or request changes — just comment with findings.
+          show_full_output: 'true'
+          claude_args: |
+            --max-turns 10
+            --model claude-sonnet-4-6
 
   auto-approve:
     name: Auto-Approve (if clean)
