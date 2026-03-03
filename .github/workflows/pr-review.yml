@@ -32,7 +32,7 @@ on:
     secrets:
       claude-oauth-token:
         description: Claude Code OAuth token
-        required: true
+        required: false
 
 jobs:
   code-review:
