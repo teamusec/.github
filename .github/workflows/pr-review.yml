@@ -13,12 +13,11 @@
 #   jobs:
 #     review:
 #       uses: your-org/.github/.github/workflows/pr-review.yml@main
-#       secrets:
-#         claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+#       secrets: inherit
 #
 # Prerequisites (one-time, org-level):
 #   1. Install the Claude GitHub App on the org.
-#   2. Add CLAUDE_CODE_OAUTH_TOKEN as an org-level secret
+#   2. Add CLAUDE_CODE_OAUTH_TOKEN as a repo or org-level secret
 #      (Settings → Secrets → Actions → New organization secret),
 #      scoped to "All repositories" or selected repos.
 #   3. Configure branch protection rulesets at the org level:
@@ -29,10 +28,8 @@ name: PR Review
 
 on:
   workflow_call:
-    secrets:
-      claude-oauth-token:
-        description: Claude Code OAuth token
-        required: false
+    # Expects CLAUDE_CODE_OAUTH_TOKEN to be available via secrets: inherit
+    # (no explicit secret mapping needed — the caller passes secrets: inherit)
 
 jobs:
   code-review:
@@ -51,7 +48,7 @@ jobs:
 
       - uses: anthropics/claude-code-action@v1
         with:
-          claude_code_oauth_token: ${{ secrets['claude-oauth-token'] }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_tools: |
             Bash(gh pr view*),Bash(gh pr diff*),Bash(gh pr comment*),Bash(gh pr list*),Bash(gh pr checks*),Bash(gh api repos/**),Bash(git log*),Bash(git diff*),Bash(git blame*),Bash(git show*),Bash(grep*),Bash(find*),Bash(cat*),Bash(ls*),Bash(head*),Bash(tail*),Read,Glob,Grep
           prompt: |
@@ -101,7 +98,7 @@ jobs:
 
       - uses: anthropics/claude-code-action@v1
         with:
-          claude_code_oauth_token: ${{ secrets['claude-oauth-token'] }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_tools: |
             Bash(gh pr view*),Bash(gh pr diff*),Bash(gh pr comment*),Bash(gh api repos/**),Bash(git log*),Bash(git diff*),Bash(git blame*),Bash(git show*),Bash(grep*),Bash(find*),Bash(cat*),Bash(ls*),Bash(head*),Bash(tail*),Read,Glob,Grep
           prompt: |
