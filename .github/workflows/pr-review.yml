@@ -28,8 +28,6 @@ name: PR Review
 
 on:
   workflow_call:
-    # Expects CLAUDE_CODE_OAUTH_TOKEN to be available via secrets: inherit
-    # (no explicit secret mapping needed — the caller passes secrets: inherit)
 
 jobs:
   code-review:
